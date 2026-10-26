@@ -6,4 +6,5 @@ metadata:
   namespace: traefik
 spec:
   ref:
+    # renovate: datasource=helm depName=traefik registryUrl=https://traefik.github.io/charts
     tag: 41.7.1
