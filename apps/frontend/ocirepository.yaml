@@ -1,0 +1,13 @@
+# Release chart of alterworld-hub/frontend; it pins the image digest. Version set per node.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: frontend
+spec:
+  interval: 10m
+  url: oci://ghcr.io/alterworld-hub/charts/frontend
+  ref:
+    tag: 0.0.0 # per node
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
