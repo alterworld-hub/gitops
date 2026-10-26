@@ -1,0 +1,27 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  pr-title:
+    uses: alterworld-hub/.github/.github/workflows/pr-title.yml@v0
+    permissions:
+      pull-requests: read
+
+  secrets-scan:
+    uses: alterworld-hub/.github/.github/workflows/secrets-scan.yml@v0
+    permissions:
+      contents: read
+
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4.0.0
+      - run: just validate
