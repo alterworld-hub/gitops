@@ -17,7 +17,11 @@ Layers per node:
 - `infrastructure`: CRD/controller providers (traefik; later operators).
 - `apps`: everything else. `dependsOn: infrastructure` only if the app uses layer-1 CRDs.
 
-Version files: service charts are bumped by the CI bot (`gitops-bump`); third-party charts by PR.
+Version files: service charts are bumped by the CI bot (`gitops-bump`); third-party charts by Renovate (`alterworld-hub/.github`), which needs a hint above the tag:
+```yaml
+    # renovate: datasource=docker depName=ghcr.io/traefik/helm/traefik
+    tag: 41.7.1
+```
 
 ## Commands
 | | |
