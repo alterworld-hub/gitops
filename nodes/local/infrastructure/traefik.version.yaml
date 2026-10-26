@@ -6,5 +6,5 @@ metadata:
   namespace: traefik
 spec:
   ref:
-    # renovate: datasource=docker depName=ghcr.io/traefik/helm/traefik
+    # renovate: datasource=helm depName=traefik registryUrl=https://traefik.github.io/charts
     tag: 41.7.1
