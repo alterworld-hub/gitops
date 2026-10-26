@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m
-  path: ./platform
+  path: ./nodes/local/platform
   prune: true
   wait: true
   timeout: 5m

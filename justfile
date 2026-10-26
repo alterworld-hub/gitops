@@ -15,7 +15,8 @@ local-down:
 validate:
     #!/usr/bin/env bash
     set -euo pipefail
-    for d in platform apps/* nodes/* nodes/*/apps; do
+    for d in components/* nodes/* nodes/*/*/; do
+      [ -f "$d/kustomization.yaml" ] || continue
       echo "== $d"
       kubectl kustomize "$d" | {{kubeconform}}
     done
