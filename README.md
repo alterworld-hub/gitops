@@ -13,6 +13,10 @@ Conventions: [alterworld-hub/.github](https://github.com/alterworld-hub/.github/
 | `nodes/<path>/flux-system/` | Flux components (pinned) + sync of this node |
 | `bootstrap/` | One-time node install |
 
+Layers per node:
+- `infrastructure`: CRD/controller providers (traefik; later operators).
+- `apps`: everything else. `dependsOn: infrastructure` only if the app uses layer-1 CRDs.
+
 Version files: service charts are bumped by the CI bot (`gitops-bump`); third-party charts by PR.
 
 ## Commands
