@@ -7,12 +7,13 @@ Conventions: [alterworld-hub/.github](https://github.com/alterworld-hub/.github/
 ## Layout
 | Path | Holds |
 |---|---|
-| `platform/` | Components identical on every node (Traefik, ...) |
-| `nodes/<path>/` | One node: Flux install, sync target, node variables |
-| `nodes/<path>/flux-system/` | Flux components (pinned) + GitRepository/Kustomization for this node |
+| `components/<name>/` | Every deployable component, same shape: namespace, source, HelmRelease. Version placeholder only |
+| `nodes/<path>/<layer>/` | Components enabled on the node (kustomization) + `<name>.version.yaml` per component |
+| `nodes/<path>/<layer>.yaml` | Flux Kustomization applying that layer with node variables (`NODE_DOMAIN`, `NODE_PATH`) |
+| `nodes/<path>/flux-system/` | Flux components (pinned) + sync of this node |
 | `bootstrap/` | One-time node install |
 
-Node variables are injected into `platform/` via Flux `postBuild.substitute` (e.g. `NODE_DOMAIN`).
+Version files: service charts are bumped by the CI bot (`gitops-bump`); third-party charts by PR.
 
 ## Commands
 | | |

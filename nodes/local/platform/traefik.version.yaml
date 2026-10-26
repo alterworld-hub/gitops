@@ -1,0 +1,9 @@
+# Traefik chart version on this node.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: traefik
+  namespace: traefik
+spec:
+  ref:
+    tag: 41.7.1
