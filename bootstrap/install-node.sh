@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Install Flux on the current kubectl context and point it at nodes/<node>.
-# Usage: bootstrap/install-node.sh <node-path>   e.g. local, corp/ukr/b1
+# Usage: bootstrap/install-node.sh <node-path>   e.g. local, root/org-a/site-1
 set -euo pipefail
 node="${1:?node path required}"
 dir="nodes/${node}/flux-system"
