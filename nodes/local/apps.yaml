@@ -7,10 +7,9 @@ spec:
   interval: 10m
   path: ./nodes/local/apps
   prune: true
-  wait: true
-  timeout: 5m
-  dependsOn:
-    - name: platform
+  # No wait/dependsOn: HelmRelease handles its own readiness and remediation; blocking here
+  # delayed every rollout by minutes (platform re-health-check + 30s dependency requeue).
+  wait: false
   sourceRef:
     kind: GitRepository
     name: flux-system
