@@ -7,8 +7,9 @@ spec:
   interval: 10m
   path: ./nodes/local/apps
   prune: true
-  # No wait/dependsOn: HelmRelease handles its own readiness and remediation; blocking here
-  # delayed every rollout by minutes (platform re-health-check + 30s dependency requeue).
+  # Layer 2. No wait: HelmRelease handles its own readiness and remediation.
+  # Add `dependsOn: [{name: infrastructure}]` only when an app uses CRDs from layer 1
+  # (dependency requeue adds ~30s+ to every rollout). Current apps use only core kinds.
   wait: false
   sourceRef:
     kind: GitRepository
