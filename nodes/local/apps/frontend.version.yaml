@@ -1,19 +1,9 @@
-# Managed by CI (alterworld-hub-bot). Release of alterworld-hub/frontend deployed on this node.
+# Managed by CI (alterworld-hub-bot). Release chart of alterworld-hub/frontend on this node.
 apiVersion: source.toolkit.fluxcd.io/v1
-kind: GitRepository
+kind: OCIRepository
 metadata:
   name: frontend
   namespace: frontend
 spec:
   ref:
-    tag: v0.3.1
----
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
-metadata:
-  name: frontend
-  namespace: frontend
-spec:
-  values:
-    image:
-      digest: sha256:259ef40d202a66a4fd0804f5b385254f85248805d344a015beecb43f70c561dd
+    tag: 0.3.1

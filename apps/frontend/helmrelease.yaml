@@ -4,13 +4,9 @@ metadata:
   name: frontend
 spec:
   interval: 30m
-  chart:
-    spec:
-      chart: ./deploy/chart
-      reconcileStrategy: Revision
-      sourceRef:
-        kind: GitRepository
-        name: frontend
+  chartRef:
+    kind: OCIRepository
+    name: frontend
   install:
     remediation:
       retries: 3
@@ -20,5 +16,3 @@ spec:
   values:
     host: app.${NODE_DOMAIN}
     nodePath: ${NODE_PATH}
-    image:
-      digest: "" # per node
