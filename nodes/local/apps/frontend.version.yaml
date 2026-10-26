@@ -6,7 +6,7 @@ metadata:
   namespace: frontend
 spec:
   ref:
-    tag: v0.2.0
+    tag: v0.3.0
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -16,4 +16,4 @@ metadata:
 spec:
   values:
     image:
-      digest: sha256:d4d96573fcd1e6d893fca702d84161cdb4b11588001a4665abe3e178567fb416
+      digest: sha256:3983b86c4dc6f3a194b38175c78e1a69979f104b6c574478c39cd91e299a7914
