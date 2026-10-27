@@ -1,0 +1,10 @@
+# CloudNativePG operator chart version on this node. Operator >= 1.30.0 (CVE-2026-55765).
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: cloudnative-pg
+  namespace: cnpg-system
+spec:
+  ref:
+    # renovate: datasource=helm depName=cloudnative-pg registryUrl=https://cloudnative-pg.github.io/charts
+    tag: 0.29.1

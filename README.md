@@ -11,10 +11,11 @@ Conventions: [alterworld-hub/.github](https://github.com/alterworld-hub/.github/
 | `nodes/<path>/<layer>/` | Components enabled on the node (kustomization) + `<name>.version.yaml` per component |
 | `nodes/<path>/<layer>.yaml` | Flux Kustomization applying that layer with node variables (`NODE_DOMAIN`, `NODE_PATH`) |
 | `nodes/<path>/flux-system/` | Flux components (pinned) + sync of this node |
-| `bootstrap/` | One-time node install |
+| `bootstrap/` | One-time node install; templates used by `just` |
 
 Layers per node:
-- `infrastructure`: CRD/controller providers (traefik; later operators).
+- `infrastructure`: CRD/controller providers: traefik, external-secrets, cloudnative-pg.
+- `data`: data services using layer-1 CRDs: Postgres cluster `main`, per-service databases.
 - `apps`: everything else. `dependsOn: infrastructure` only if the app uses layer-1 CRDs.
 
 Version files: service charts are bumped by the CI bot (`gitops-bump`); third-party charts by Renovate (`alterworld-hub/.github`), which needs a hint above the tag (prefer a datasource with release dates, e.g. the chart's Helm repo, so minimumReleaseAge works):
@@ -23,11 +24,28 @@ Version files: service charts are bumped by the CI bot (`gitops-bump`); third-pa
     tag: 41.7.1
 ```
 
+## Postgres for a service
+One CloudNativePG cluster per node (`main`, namespace `postgres`). Per service: role + database (snake_case of the service name), password generated on the node by ESO (`CreatedOnce`), never in git.
+
+1. `just db-add <node> <service>` → `nodes/<node>/data/databases/<service>.yaml`; commit via PR.
+2. Secret `postgres` appears in namespace `<service>` (when it exists): `host`, `port`, `dbname`, `username`, `password`, `uri`.
+3. The service mounts it as files and reads them at start:
+   ```yaml
+   volumeMounts: [{name: postgres, mountPath: /etc/postgres, readOnly: true}]
+   volumes: [{name: postgres, secret: {secretName: postgres}}]
+   ```
+
+Local development against the node: `just pg-forward` (localhost:5432) and the credentials from that Secret. Admin shell: `just psql [db]`.
+
+Known limits: one instance, no backups yet; any namespace may reference store `postgres` ([gitops#52](https://github.com/alterworld-hub/gitops/issues/52)).
+
 ## Commands
 | | |
 |---|---|
 | `just local-up` | k3d node `local` + Flux; Traefik dashboard: http://traefik.local.alterworld-hub.localhost:8080/dashboard/ |
 | `just local-down` | Delete it |
+| `just db-add <node> <service>` | Declare a Postgres role + database for a service |
+| `just psql [db]` / `just pg-forward` | Admin psql in the node cluster / forward Postgres to localhost:5432 |
 | `just validate` | Render and schema-check all kustomizations (same as CI) |
 | `just flux-components <node>` | Re-pin Flux components to the installed CLI version |
 
