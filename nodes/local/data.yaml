@@ -1,12 +1,12 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
-# Layer 1.5: data services (Postgres cluster, per-service databases). Needs operator CRDs from layer 1.
+# Layer 2a: data services (Postgres, RabbitMQ) and per-service databases/users. Needs operators from layers 1 and 1b.
 metadata:
   name: data
   namespace: flux-system
 spec:
   dependsOn:
-    - name: infrastructure
+    - name: operators
   interval: 10m
   path: ./nodes/local/data
   prune: true
@@ -25,6 +25,21 @@ spec:
       kind: Database
       current: has(status.applied) && status.applied
       failed: has(status.applied) && !status.applied
+    - apiVersion: rabbitmq.com/v1beta1
+      kind: RabbitmqCluster
+      current: has(status.conditions) && status.conditions.exists(c, c.type == 'ClusterAvailable' && c.status == 'True') && status.conditions.exists(c, c.type == 'AllReplicasReady' && c.status == 'True')
+    - apiVersion: rabbitmq.com/v1beta1
+      kind: Vhost
+      current: has(status.conditions) && status.conditions.exists(c, c.type == 'Ready' && c.status == 'True')
+    - apiVersion: rabbitmq.com/v1beta1
+      kind: User
+      current: has(status.conditions) && status.conditions.exists(c, c.type == 'Ready' && c.status == 'True')
+    - apiVersion: rabbitmq.com/v1beta1
+      kind: Permission
+      current: has(status.conditions) && status.conditions.exists(c, c.type == 'Ready' && c.status == 'True')
   sourceRef:
     kind: GitRepository
     name: flux-system
+  postBuild:
+    substitute:
+      NODE_DOMAIN: local.alterworld-hub.localhost

@@ -3,3 +3,5 @@ kind: Kustomization
 resources:
   - ../../../components/postgres
   - databases
+  - ../../../components/rabbitmq
+  - rabbitmq-users

@@ -1,0 +1,78 @@
+# RabbitMQ user for service `playground` in vhost alterworld: configure/write `playground.*`, read own + `*.events`;
+# credentials as Secret `rabbitmq` in namespace `playground` (keys: host, port, vhost, username, password, uri).
+# Created by: just mq-add local playground
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: playground-password
+  namespace: rabbitmq
+spec:
+  refreshPolicy: CreatedOnce # generated once; Periodic would rotate it under running services
+  target:
+    name: playground-password
+    template:
+      data:
+        username: playground
+        password: "{{ .password }}"
+  dataFrom:
+    - sourceRef:
+        generatorRef:
+          apiVersion: generators.external-secrets.io/v1alpha1
+          kind: Password
+          name: mq-password
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: playground
+  namespace: rabbitmq
+spec:
+  rabbitmqClusterReference:
+    name: main
+  importCredentialsSecret:
+    name: playground-password
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: playground
+  namespace: rabbitmq
+spec:
+  vhost: alterworld
+  userReference:
+    name: playground
+  permissions:
+    configure: '^playground\.'
+    write: '^playground\.'
+    read: '^(playground\..*|.*\.events)$'
+  rabbitmqClusterReference:
+    name: main
+---
+# Lands in namespace playground whenever it exists; no ordering with the service deploy.
+apiVersion: external-secrets.io/v1
+kind: ClusterExternalSecret
+metadata:
+  name: playground-rabbitmq
+spec:
+  namespaceSelectors:
+    - matchLabels:
+        kubernetes.io/metadata.name: playground
+  refreshTime: 1m
+  externalSecretSpec:
+    refreshInterval: 1h
+    secretStoreRef:
+      kind: ClusterSecretStore
+      name: rabbitmq
+    target:
+      name: rabbitmq
+      template:
+        data:
+          host: main.rabbitmq.svc
+          port: "5672"
+          vhost: alterworld
+          username: "{{ .username }}"
+          password: "{{ .password }}"
+          uri: "amqp://{{ .username }}:{{ .password }}@main.rabbitmq.svc:5672/alterworld"
+    dataFrom:
+      - extract:
+          key: playground-password

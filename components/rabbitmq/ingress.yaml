@@ -1,0 +1,17 @@
+# Management UI: http://rabbitmq.<node domain>:8080 (local). Login: just mq-admin.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: management
+spec:
+  rules:
+    - host: rabbitmq.${NODE_DOMAIN}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: main
+                port:
+                  name: management
