@@ -1,6 +1,6 @@
 # Database for service `${NAME}`: role and database `${PG}` in cluster main;
 # credentials as Secret `postgres` in namespace `${NAME}` (keys: host, port, dbname, username, password, uri).
-# Created by: just db-add ${NODE} ${NAME}
+# Dropped with the service (reclaim policies below); CI requires label drop-data for that.
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
@@ -37,6 +37,7 @@ spec:
   login: true
   passwordSecret:
     name: ${NAME}-password
+  databaseRoleReclaimPolicy: delete
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: Database
@@ -48,6 +49,7 @@ spec:
     name: main
   name: ${PG}
   owner: ${PG}
+  databaseReclaimPolicy: delete
 ---
 # Lands in namespace ${NAME} whenever it exists; no ordering with the service deploy.
 apiVersion: external-secrets.io/v1

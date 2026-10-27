@@ -26,25 +26,18 @@ validate:
 features *args:
     YQ='{{yq}}' python3 scripts/features.py {{args}}
 
+# Stateful data on nodes in <base> that this tree drops (CI: such a PR needs label drop-data)
+dropped base="origin/main":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    tmp=$(mktemp -d)
+    trap 'git worktree remove --force "$tmp"' EXIT
+    git worktree add -q --detach "$tmp" "{{base}}"
+    YQ='{{yq}}' python3 scripts/features.py --dropped "$tmp"
+
 # Regenerate Flux components for a node at the installed flux CLI version
 flux-components node:
     flux install --export > nodes/{{node}}/flux-system/gotk-components.yaml
-
-# Declare a Postgres role + database for a service; credentials land in Secret `postgres` of namespace <name>
-db-add node name: (_add "database" "databases" node name)
-
-# Declare a RabbitMQ user + permissions (prefix <name>.) for a service; credentials land in Secret `rabbitmq` of namespace <name>
-mq-add node name: (_add "rabbitmq-user" "rabbitmq-users" node name)
-
-_add tpl dir node name:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    [[ "{{name}}" =~ ^[a-z][a-z0-9-]*$ ]] || { echo "name: lowercase kebab-case"; exit 1; }
-    dir=nodes/{{node}}/data/{{dir}}; file=$dir/{{name}}.yaml
-    [ -e "$file" ] && { echo "$file exists"; exit 1; }
-    NODE={{node}} NAME={{name}} PG=$(tr - _ <<<"{{name}}") envsubst '${NODE} ${NAME} ${PG}' < bootstrap/{{tpl}}.yaml.tpl > "$file"
-    (cd $dir && printf 'apiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources:\n%s\n' "$(ls *.yaml | grep -vx kustomization.yaml | sed 's/^/  - /')" > kustomization.yaml)
-    echo "created $file; commit it via PR"
 
 # psql as postgres inside the node's cluster (current kube context)
 psql db="postgres":

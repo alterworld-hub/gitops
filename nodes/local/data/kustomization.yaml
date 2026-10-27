@@ -4,5 +4,4 @@ kind: Kustomization
 resources:
   - ../../../components/postgres
   - ../../../components/rabbitmq
-  - databases
-  - rabbitmq-users
+  - services/playground.yaml
