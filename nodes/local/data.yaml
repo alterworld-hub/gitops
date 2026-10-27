@@ -12,6 +12,19 @@ spec:
   prune: true
   wait: true
   timeout: 10m
+  # kstatus treats a fresh CNPG object as current; judge readiness by its own status instead.
+  healthCheckExprs:
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: Cluster
+      current: has(status.conditions) && status.conditions.exists(c, c.type == 'Ready' && c.status == 'True')
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: DatabaseRole
+      current: has(status.applied) && status.applied
+      failed: has(status.applied) && !status.applied
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: Database
+      current: has(status.applied) && status.applied
+      failed: has(status.applied) && !status.applied
   sourceRef:
     kind: GitRepository
     name: flux-system
