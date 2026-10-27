@@ -8,6 +8,7 @@ spec:
   dependsOn:
     - name: infrastructure
   interval: 10m
+  retryInterval: 1m
   path: ./nodes/local/operators
   prune: true
   wait: true

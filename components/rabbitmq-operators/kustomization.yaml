@@ -3,3 +3,20 @@ kind: Kustomization
 resources:
   - cluster-operator.yaml
   - messaging-topology-operator.yaml
+patches:
+  # On a fresh node topology objects fail until the server and their User/Vhost exist; the failures push
+  # controller-runtime backoff to ~16 min with nothing to re-trigger them. Resync caps the wait at 1m.
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: messaging-topology-operator
+        namespace: rabbitmq-system
+      spec:
+        template:
+          spec:
+            containers:
+              - name: manager
+                env:
+                  - name: SYNC_PERIOD
+                    value: 1m
