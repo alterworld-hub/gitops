@@ -15,15 +15,21 @@ components:
   rabbitmq: data
   frontend: apps
 
-# A feature enables components (dep:<component>) and other features.
+# Data lost when the component leaves a node (with every service database for postgres).
+# CI fails a PR that drops any of it unless the PR has label drop-data.
+stateful: [postgres, rabbitmq]
+
+# Services and what they need on the node. Each need is also a feature of the same name, so enabling
+# a service enables it. Per need the node gets (bootstrap/*.tpl): postgres -> role + database + Secret
+# `postgres` in namespace <service>; rabbitmq -> user + permissions + Secret `rabbitmq` there.
+services:
+  playground: {needs: [postgres, rabbitmq]} # sandbox for trying a service against the node
+
+# A feature enables components (dep:<component>), services (svc:<service>) and other features.
 features:
   postgres: [dep:postgres]
   rabbitmq: [dep:rabbitmq]
   web: [dep:frontend]
+  playground: [svc:playground]
   # Codenames: sets of features.
   lados: [postgres, rabbitmq, web]
-
-# Node-local directories (per-service objects, `just db-add` / `just mq-add`) -> component they need.
-nodeDirs:
-  data/databases: postgres
-  data/rabbitmq-users: rabbitmq

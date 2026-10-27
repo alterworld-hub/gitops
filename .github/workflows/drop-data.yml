@@ -1,0 +1,32 @@
+name: drop-data
+
+# A PR that removes stateful data from a node (Postgres/RabbitMQ cluster, a service database) needs label drop-data.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions: {}
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # compares with the target branch
+      - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4.0.0
+      - name: stateful data leaving nodes
+        env:
+          BASE: origin/${{ github.base_ref }}
+          LABELED: ${{ contains(github.event.pull_request.labels.*.name, 'drop-data') }}
+        run: |
+          dropped=$(just dropped "$BASE")
+          if [ -z "$dropped" ]; then echo "no stateful data dropped"; exit 0; fi
+          echo "$dropped"
+          if [ "$LABELED" = true ]; then echo "::warning::label drop-data: merging deletes the data above"; exit 0; fi
+          echo "::error::merging deletes the stateful data above; add label drop-data if intended"
+          exit 1

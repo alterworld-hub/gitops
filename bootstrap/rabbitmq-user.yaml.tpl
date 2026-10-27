@@ -1,6 +1,5 @@
 # RabbitMQ user for service `${NAME}` (generated username) in vhost alterworld: configure/write `${NAME}.*`, read own + `*.events`;
 # credentials as Secret `rabbitmq` in namespace `${NAME}` (keys: host, port, vhost, username, password, uri).
-# Created by: just mq-add ${NODE} ${NAME}
 apiVersion: rabbitmq.com/v1beta1
 kind: User
 metadata:
