@@ -1,0 +1,4 @@
+# Features of this node (features.yaml). After a change: just features.
+apiVersion: alterworld-hub.github.io/v1alpha1
+kind: Node
+features: [lados]
