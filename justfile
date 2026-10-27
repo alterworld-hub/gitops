@@ -1,3 +1,4 @@
+yq := "docker run --rm -i docker.io/mikefarah/yq:4.54.1"
 kubeconform := "docker run --rm -i ghcr.io/yannh/kubeconform:v0.8.0 -strict -summary -ignore-missing-schemas -schema-location default -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'"
 
 default:
@@ -21,9 +22,9 @@ validate:
       kubectl kustomize "$d" | {{kubeconform}}
     done
 
-# Render node layer kustomizations from features.toml + nodes/<node>/node.toml (--check: fail if invalid or out of date)
+# Render node layer kustomizations from features.yaml + nodes/<node>/node.yaml (--check: fail if invalid or out of date)
 features *args:
-    python3 scripts/features.py {{args}}
+    YQ='{{yq}}' python3 scripts/features.py {{args}}
 
 # Regenerate Flux components for a node at the installed flux CLI version
 flux-components node:

@@ -1,2 +1,0 @@
-# Features of this node (features.toml); `core` is always on. After a change: just features.
-features = ["lados"]

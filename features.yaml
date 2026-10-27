@@ -1,0 +1,29 @@
+# Node features, Cargo-style. A node lists features in nodes/<node>/node.yaml; `just features` renders
+# its layer kustomizations. Code is the same on every node: features only pick which components run.
+apiVersion: alterworld-hub.github.io/v1alpha1
+kind: FeatureCatalog
+
+# On every node, never toggled: CRD providers and operators. Turning a feature off deletes its objects
+# while their operator still runs and finalizes them (Flux has no deletion order between layers).
+platform:
+  infrastructure: [traefik, cert-manager, external-secrets, cloudnative-pg]
+  operators: [rabbitmq-operators]
+
+# Toggled by features: component (components/<name>) -> layer (data or apps).
+components:
+  postgres: data
+  rabbitmq: data
+  frontend: apps
+
+# A feature enables components (dep:<component>) and other features.
+features:
+  postgres: [dep:postgres]
+  rabbitmq: [dep:rabbitmq]
+  web: [dep:frontend]
+  # Codenames: sets of features.
+  lados: [postgres, rabbitmq, web]
+
+# Node-local directories (per-service objects, `just db-add` / `just mq-add`) -> component they need.
+nodeDirs:
+  data/databases: postgres
+  data/rabbitmq-users: rabbitmq

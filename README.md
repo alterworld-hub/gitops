@@ -7,8 +7,8 @@ Conventions: [alterworld-hub/.github](https://github.com/alterworld-hub/.github/
 ## Layout
 | Path | Holds |
 |---|---|
-| `features.toml` | Node features (Cargo-style): component → layer, features, codenames |
-| `nodes/<path>/node.toml` | Features enabled on the node |
+| `features.yaml` | Platform components, feature-toggled components, features and codenames |
+| `nodes/<path>/node.yaml` | Features enabled on the node |
 | `components/<name>/` | Every deployable component, same shape: namespace, source, HelmRelease. Version placeholder only |
 | `nodes/<path>/<layer>/` | Generated kustomization (`just features`) + `<name>.version.yaml` per component + node-local dirs |
 | `nodes/<path>/<layer>.yaml` | Flux Kustomization applying that layer with node variables (`NODE_DOMAIN`, `NODE_PATH`) |
@@ -22,22 +22,22 @@ Layers per node:
 - `apps`: everything else. `dependsOn: infrastructure` only if the app uses layer-1 CRDs.
 
 ## Node features
-Nodes run the same code and differ only by enabled features, declared like Cargo features in `features.toml`:
-```toml
-[features]
-core = ["dep:traefik", "dep:cert-manager", "dep:external-secrets"] # on every node
-postgres = ["dep:cloudnative-pg", "dep:postgres"]
-lados = ["postgres", "rabbitmq", "web"]                             # codename = set of features
+Nodes run the same code and differ only by enabled features, declared Cargo-style in `features.yaml`:
+```yaml
+platform:            # every node, never toggled: CRD providers and operators
+  infrastructure: [traefik, cert-manager, external-secrets, cloudnative-pg]
+  operators: [rabbitmq-operators]
+components:          # toggled by features -> layer
+  postgres: data
+features:
+  postgres: [dep:postgres]
+  lados: [postgres, rabbitmq, web]   # codename = set of features
 ```
-A node picks features in `nodes/<path>/node.toml` (`features = ["lados"]`). `just features` renders the node's layer kustomizations; never edit them by hand. CI (`just features --check`) fails on unknown names, cycles, missing or stale version files, node-local dirs whose component is off (`data/databases` needs Postgres), and out-of-date files.
+A node lists features in `nodes/<path>/node.yaml` (`features: [lados]`). `just features` renders the node's layer kustomizations; never edit them by hand. CI (`just features --check`) fails on unknown names, cycles, missing or stale version files, node-local dirs whose component is off (`data/databases` needs Postgres), and out-of-date files.
 
-Turning a feature off takes two PRs, because Flux prunes layers in no fixed order and an operator removed before its objects leaves their finalizers stuck:
-1. In `node.toml` move it from `features` to `teardown = ["<feature>"]`, delete what the check names, `just features`. Its objects go; its providers (`infrastructure`/`operators` components) stay and finalize them.
-2. Remove it from `teardown`, `just features`. The providers go.
+Turning a feature off: remove it from `node.yaml`, delete what the check names, `just features`, one PR. Flux deletes the feature's objects; operators stay (platform) and finalize them. Flux has no deletion order between Kustomizations ([kustomize-controller#301](https://github.com/fluxcd/kustomize-controller/issues/301)), which is why providers are never feature-toggled.
 
-CI (`--base origin/main`) rejects a provider removed while its feature was still on.
-
-New component: `components/<name>/`, add it to `[components]` with its layer and to a feature; per-node chart version in `nodes/<path>/<layer>/<name>.version.yaml`.
+New component: `components/<name>/`; a provider goes to `platform`, anything else to `components` + a feature. Per-node chart version in `nodes/<path>/<layer>/<name>.version.yaml`.
 
 Version files: service charts are bumped by the CI bot (`gitops-bump`); third-party charts by Renovate (`alterworld-hub/.github`), which needs a hint above the tag (prefer a datasource with release dates, e.g. the chart's Helm repo, so minimumReleaseAge works):
 ```yaml
