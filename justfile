@@ -21,6 +21,10 @@ validate:
       kubectl kustomize "$d" | {{kubeconform}}
     done
 
+# Render node layer kustomizations from features.toml + nodes/<node>/node.toml (--check: fail if invalid or out of date)
+features *args:
+    python3 scripts/features.py {{args}}
+
 # Regenerate Flux components for a node at the installed flux CLI version
 flux-components node:
     flux install --export > nodes/{{node}}/flux-system/gotk-components.yaml

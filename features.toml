@@ -1,0 +1,29 @@
+# Node features, Cargo-style. A node enables features in nodes/<node>/node.toml;
+# `just features` renders its layer kustomizations from them. Code is the same on every node:
+# features only pick which components run.
+
+# Component (components/<name>) -> Flux layer that applies it. Order here = order in rendered files.
+[components]
+traefik = "infrastructure"
+cert-manager = "infrastructure"
+external-secrets = "infrastructure"
+cloudnative-pg = "infrastructure"
+rabbitmq-operators = "operators"
+postgres = "data"
+rabbitmq = "data"
+frontend = "apps"
+
+# A feature enables components (`dep:<component>`) and other features.
+[features]
+core = ["dep:traefik", "dep:cert-manager", "dep:external-secrets"] # on every node
+postgres = ["dep:cloudnative-pg", "dep:postgres"]
+rabbitmq = ["dep:rabbitmq-operators", "dep:rabbitmq"]
+web = ["dep:frontend"]
+
+# Codenames: sets of features.
+lados = ["postgres", "rabbitmq", "web"]
+
+# Node-local directories (per-service objects, `just db-add` / `just mq-add`) -> component they need.
+[node-dirs]
+"data/databases" = "postgres"
+"data/rabbitmq-users" = "rabbitmq"
