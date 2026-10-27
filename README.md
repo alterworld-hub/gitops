@@ -31,7 +31,11 @@ lados = ["postgres", "rabbitmq", "web"]                             # codename =
 ```
 A node picks features in `nodes/<path>/node.toml` (`features = ["lados"]`). `just features` renders the node's layer kustomizations; never edit them by hand. CI (`just features --check`) fails on unknown names, cycles, missing or stale version files, node-local dirs whose component is off (`data/databases` needs Postgres), and out-of-date files.
 
-Turning a feature off: edit `node.toml`, delete what the check names, `just features`, PR. Flux prunes the components.
+Turning a feature off takes two PRs, because Flux prunes layers in no fixed order and an operator removed before its objects leaves their finalizers stuck:
+1. In `node.toml` move it from `features` to `teardown = ["<feature>"]`, delete what the check names, `just features`. Its objects go; its providers (`infrastructure`/`operators` components) stay and finalize them.
+2. Remove it from `teardown`, `just features`. The providers go.
+
+CI (`--base origin/main`) rejects a provider removed while its feature was still on.
 
 New component: `components/<name>/`, add it to `[components]` with its layer and to a feature; per-node chart version in `nodes/<path>/<layer>/<name>.version.yaml`.
 
