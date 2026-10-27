@@ -1,0 +1,9 @@
+# One vhost for the platform. Isolation between services by name prefix permissions (<service>.*).
+apiVersion: rabbitmq.com/v1beta1
+kind: Vhost
+metadata:
+  name: alterworld
+spec:
+  name: alterworld
+  rabbitmqClusterReference:
+    name: main

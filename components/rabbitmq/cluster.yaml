@@ -1,0 +1,17 @@
+# One RabbitMQ cluster per node. Services get a user + permissions each (nodes/<node>/data/rabbitmq-users).
+# Endpoint for services: main.rabbitmq.svc:5672, vhost `alterworld`.
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: main
+spec:
+  replicas: 1
+  image: docker.io/library/rabbitmq:4.3.7-management
+  persistence:
+    storage: 2Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
