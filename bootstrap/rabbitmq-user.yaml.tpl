@@ -1,36 +1,16 @@
-# RabbitMQ user for service `${NAME}` in vhost alterworld: configure/write `${NAME}.*`, read own + `*.events`;
+# RabbitMQ user for service `${NAME}` (generated username) in vhost alterworld: configure/write `${NAME}.*`, read own + `*.events`;
 # credentials as Secret `rabbitmq` in namespace `${NAME}` (keys: host, port, vhost, username, password, uri).
 # Created by: just mq-add ${NODE} ${NAME}
-apiVersion: external-secrets.io/v1
-kind: ExternalSecret
-metadata:
-  name: ${NAME}-password
-  namespace: rabbitmq
-spec:
-  refreshPolicy: CreatedOnce # generated once; Periodic would rotate it under running services
-  target:
-    name: ${NAME}-password
-    template:
-      data:
-        username: ${NAME}
-        password: "{{ .password }}"
-  dataFrom:
-    - sourceRef:
-        generatorRef:
-          apiVersion: generators.external-secrets.io/v1alpha1
-          kind: Password
-          name: mq-password
----
 apiVersion: rabbitmq.com/v1beta1
 kind: User
 metadata:
   name: ${NAME}
   namespace: rabbitmq
+# The operator generates username and password into Secret ${NAME}-user-credentials.
+# (importCredentialsSecret would need the Secret before the webhook admits the User.)
 spec:
   rabbitmqClusterReference:
     name: main
-  importCredentialsSecret:
-    name: ${NAME}-password
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Permission
@@ -75,4 +55,4 @@ spec:
           uri: "amqp://{{ .username }}:{{ .password }}@main.rabbitmq.svc:5672/alterworld"
     dataFrom:
       - extract:
-          key: ${NAME}-password
+          key: ${NAME}-user-credentials

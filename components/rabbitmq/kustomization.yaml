@@ -5,6 +5,5 @@ resources:
   - namespace.yaml
   - cluster.yaml
   - vhost.yaml
-  - password-generator.yaml
   - secret-store.yaml
   - ingress.yaml

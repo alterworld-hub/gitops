@@ -1,36 +1,16 @@
-# RabbitMQ user for service `playground` in vhost alterworld: configure/write `playground.*`, read own + `*.events`;
+# RabbitMQ user for service `playground` (generated username) in vhost alterworld: configure/write `playground.*`, read own + `*.events`;
 # credentials as Secret `rabbitmq` in namespace `playground` (keys: host, port, vhost, username, password, uri).
 # Created by: just mq-add local playground
-apiVersion: external-secrets.io/v1
-kind: ExternalSecret
-metadata:
-  name: playground-password
-  namespace: rabbitmq
-spec:
-  refreshPolicy: CreatedOnce # generated once; Periodic would rotate it under running services
-  target:
-    name: playground-password
-    template:
-      data:
-        username: playground
-        password: "{{ .password }}"
-  dataFrom:
-    - sourceRef:
-        generatorRef:
-          apiVersion: generators.external-secrets.io/v1alpha1
-          kind: Password
-          name: mq-password
----
 apiVersion: rabbitmq.com/v1beta1
 kind: User
 metadata:
   name: playground
   namespace: rabbitmq
+# The operator generates username and password into Secret playground-user-credentials.
+# (importCredentialsSecret would need the Secret before the webhook admits the User.)
 spec:
   rabbitmqClusterReference:
     name: main
-  importCredentialsSecret:
-    name: playground-password
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Permission
@@ -75,4 +55,4 @@ spec:
           uri: "amqp://{{ .username }}:{{ .password }}@main.rabbitmq.svc:5672/alterworld"
     dataFrom:
       - extract:
-          key: playground-password
+          key: playground-user-credentials
