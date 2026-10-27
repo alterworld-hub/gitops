@@ -6,4 +6,4 @@ metadata:
   namespace: frontend
 spec:
   ref:
-    tag: 0.3.4
+    tag: 0.4.0
