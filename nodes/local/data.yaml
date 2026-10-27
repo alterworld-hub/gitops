@@ -8,11 +8,14 @@ spec:
   dependsOn:
     - name: operators
   interval: 10m
+  # A failed rollout is retried after this, not after `interval`.
+  retryInterval: 1m
   path: ./nodes/local/data
   prune: true
   wait: true
   timeout: 10m
   # kstatus treats a fresh CNPG object as current; judge readiness by its own status instead.
+  # No `failed` for Database/DatabaseRole: applied=false is also transient (database tried before its role).
   healthCheckExprs:
     - apiVersion: postgresql.cnpg.io/v1
       kind: Cluster
@@ -20,11 +23,9 @@ spec:
     - apiVersion: postgresql.cnpg.io/v1
       kind: DatabaseRole
       current: has(status.applied) && status.applied
-      failed: has(status.applied) && !status.applied
     - apiVersion: postgresql.cnpg.io/v1
       kind: Database
       current: has(status.applied) && status.applied
-      failed: has(status.applied) && !status.applied
     - apiVersion: rabbitmq.com/v1beta1
       kind: RabbitmqCluster
       current: has(status.conditions) && status.conditions.exists(c, c.type == 'ClusterAvailable' && c.status == 'True') && status.conditions.exists(c, c.type == 'AllReplicasReady' && c.status == 'True')
