@@ -1,0 +1,12 @@
+# One Postgres cluster per node. Services get a role + database each (nodes/<node>/data/databases).
+# Endpoint for services: main-rw.postgres.svc:5432.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: main
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.6-minimal-trixie
+  enableSuperuserAccess: false
+  storage:
+    size: 2Gi

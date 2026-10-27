@@ -1,0 +1,13 @@
+# Chart of external-secrets. Version set per node.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: external-secrets
+spec:
+  interval: 1h
+  url: oci://ghcr.io/external-secrets/charts/external-secrets
+  ref:
+    tag: 0.0.0 # per node
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy

@@ -1,0 +1,79 @@
+# Database for service `playground`: role and database `playground` in cluster main;
+# credentials as Secret `postgres` in namespace `playground` (keys: host, port, dbname, username, password, uri).
+# Created by: just db-add local playground
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: playground-password
+  namespace: postgres
+spec:
+  refreshPolicy: CreatedOnce # generated once; Periodic would rotate it under running services
+  target:
+    name: playground-password
+    template:
+      type: kubernetes.io/basic-auth
+      metadata:
+        labels:
+          cnpg.io/reload: "true"
+      data:
+        username: playground
+        password: "{{ .password }}"
+  dataFrom:
+    - sourceRef:
+        generatorRef:
+          apiVersion: generators.external-secrets.io/v1alpha1
+          kind: Password
+          name: db-password
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: playground
+  namespace: postgres
+spec:
+  cluster:
+    name: main
+  name: playground
+  login: true
+  passwordSecret:
+    name: playground-password
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: playground
+  namespace: postgres
+spec:
+  cluster:
+    name: main
+  name: playground
+  owner: playground
+---
+# Lands in namespace playground whenever it exists; no ordering with the service deploy.
+apiVersion: external-secrets.io/v1
+kind: ClusterExternalSecret
+metadata:
+  name: playground-postgres
+spec:
+  namespaceSelectors:
+    - matchLabels:
+        kubernetes.io/metadata.name: playground
+  refreshTime: 1m
+  externalSecretSpec:
+    refreshInterval: 1h
+    secretStoreRef:
+      kind: ClusterSecretStore
+      name: postgres
+    target:
+      name: postgres
+      template:
+        data:
+          host: main-rw.postgres.svc
+          port: "5432"
+          dbname: playground
+          username: "{{ .username }}"
+          password: "{{ .password }}"
+          uri: "postgresql://{{ .username }}:{{ .password }}@main-rw.postgres.svc:5432/playground"
+    dataFrom:
+      - extract:
+          key: playground-password
