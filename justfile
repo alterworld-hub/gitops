@@ -1,4 +1,4 @@
-yq := "docker run --rm -i docker.io/mikefarah/yq:4.54.1"
+yq := "docker run --rm -i docker.io/mikefarah/yq:4.54.3"
 kubeconform := "docker run --rm -i ghcr.io/yannh/kubeconform:v0.8.0 -strict -summary -ignore-missing-schemas -schema-location default -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'"
 
 default:
