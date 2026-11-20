@@ -7,4 +7,4 @@ metadata:
 spec:
   ref:
     # renovate: datasource=helm depName=cloudnative-pg registryUrl=https://cloudnative-pg.github.io/charts
-    tag: 0.29.1
+    tag: 0.29.2
